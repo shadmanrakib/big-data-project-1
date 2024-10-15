@@ -31,3 +31,33 @@ output this information in a single query.
 2. We assume that a compound can treat a disease if the
 compound up-regulates/down-regulates a gene, but the location down-regulates/up-regulates the gene in an opposite direction where the disease occurs. Find all compounds that can treat a new disease (i.e. the missing edges between compound and disease excluding existing drugs). Obtain and output all drugs in
 a single query.
+
+## Queries
+MATCH (d:Disease)
+WHERE d.id = $diseaseId
+// Match compounds that treat or palliate the disease
+OPTIONAL MATCH (d)<-[r:CtD|CpD]-(c:Compound)
+// Match genes associated with the disease
+OPTIONAL MATCH (d)-[:DuG|DdG|DaG]->(g:Gene)
+// Match anatomical locations related to the disease
+OPTIONAL MATCH (d)-[:DlA]->(a:Anatomy)
+RETURN d.name AS disease_name,
+       collect(distinct c.name) AS compound_names,
+       collect(distinct g.name) AS gene_names,
+       collect(distinct a.name) AS anatomy_locations
+
+MATCH (c:Compound)-[cr:CuG]->(g:Gene)<-[ar:AdG]-(a:Anatomy)
+MATCH (c)-[cr:CdG]->(g)<-[ar:AuG]-(a)
+MATCH (d:Disease)-[lr:DlA]->(a)
+WHERE there doesnt exists a (c)-[:CtD]->(d)
+RETURN c.name as drug, d.name as disease
+
+MATCH (c:Compound)-[:CuG|CdG]->(g:Gene)<-[:AdG|AuG]-(a:Anatomy)
+WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
+   OR (c)-[:CdG]->(g)<-[:AuG]-(a)
+MATCH (d:Disease)-[:DlA]->(a)
+WHERE NOT EXISTS ((c)-[:CtD]->(d))
+RETURN DISTINCT d.name AS disease, collect(DISTINCT c.name) AS drugs
+
+
+
