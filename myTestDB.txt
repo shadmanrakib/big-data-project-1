@@ -1212,4 +1212,70 @@ myTestDB> db.nodes.find()
   }
 ]
 Type "it" for more
+myTestDB> db.edges.find({},{"name":1});
+[
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b67') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b68') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b69') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6a') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6b') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6c') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6d') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6e') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b6f') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b70') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b71') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b72') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b73') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b74') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b75') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b76') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b77') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b78') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b79') },
+  { _id: ObjectId('670efc1ab99aa6fdd4ba0b7a') }
+]
+Type "it" for more
+myTestDB> db.nodes.find({},{"name":1});
+[
+  {
+    _id: ObjectId('670ef4694c8d47ed14846520'),
+    name: 'islet of Langerhans'
+  },
+  { _id: ObjectId('670ef4694c8d47ed14846521'), name: 'appendage' },
+  { _id: ObjectId('670ef4694c8d47ed14846522'), name: 'lymph node' },
+  { _id: ObjectId('670ef4694c8d47ed14846523'), name: 'head' },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846524'),
+    name: 'follicular fluid'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846525'),
+    name: 'serous membrane'
+  },
+  { _id: ObjectId('670ef4694c8d47ed14846526'), name: 'tendon' },
+  { _id: ObjectId('670ef4694c8d47ed14846527'), name: 'ganglion' },
+  { _id: ObjectId('670ef4694c8d47ed14846528'), name: 'macula lutea' },
+  { _id: ObjectId('670ef4694c8d47ed14846529'), name: 'macula' },
+  { _id: ObjectId('670ef4694c8d47ed1484652a'), name: 'ureter' },
+  { _id: ObjectId('670ef4694c8d47ed1484652b'), name: 'urethra' },
+  { _id: ObjectId('670ef4694c8d47ed1484652c'), name: 'mouth' },
+  { _id: ObjectId('670ef4694c8d47ed1484652d'), name: 'blood' },
+  { _id: ObjectId('670ef4694c8d47ed1484652e'), name: 'ligament' },
+  {
+    _id: ObjectId('670ef4694c8d47ed1484652f'),
+    name: 'parasympathetic nervous system'
+  },
+  { _id: ObjectId('670ef4694c8d47ed14846530'), name: 'testis' },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846531'),
+    name: 'female reproductive system'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846532'),
+    name: 'basal lamina of epithelium'
+  },
+  { _id: ObjectId('670ef4694c8d47ed14846533'), name: 'sense organ' }
+]
+Type "it" for more
 myTestDB>
