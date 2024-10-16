@@ -33,12 +33,13 @@ compound up-regulates/down-regulates a gene, but the location down-regulates/up-
 a single query.
 
 ## Queries
+### Query 1
 MATCH (d:Disease)
 WHERE d.id = $diseaseId
 // Match compounds that treat or palliate the disease
 OPTIONAL MATCH (d)<-[r:CtD|CpD]-(c:Compound)
 // Match genes associated with the disease
-OPTIONAL MATCH (d)-[:DuG|DdG|DaG]->(g:Gene)
+OPTIONAL MATCH (d)-[:DaG]->(g:Gene)
 // Match anatomical locations related to the disease
 OPTIONAL MATCH (d)-[:DlA]->(a:Anatomy)
 RETURN d.name AS disease_name,
@@ -46,12 +47,15 @@ RETURN d.name AS disease_name,
        collect(distinct g.name) AS gene_names,
        collect(distinct a.name) AS anatomy_locations
 
-MATCH (c:Compound)-[cr:CuG]->(g:Gene)<-[ar:AdG]-(a:Anatomy)
-MATCH (c)-[cr:CdG]->(g)<-[ar:AuG]-(a)
-MATCH (d:Disease)-[lr:DlA]->(a)
-WHERE there doesnt exists a (c)-[:CtD]->(d)
-RETURN c.name as drug, d.name as disease
+### Query 2
+MATCH (c:Compound)-[:CuG|CdG]->(g:Gene)<-[:AdG|AuG]-(a:Anatomy)
+WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
+   OR (c)-[:CdG]->(g)<-[:AuG]-(a)
+MATCH (d:Disease {id: $diseaseId})-[:DlA]->(a)
+WHERE NOT EXISTS ((c)-[:CtD]->(d))
+RETURN DISTINCT c.name as drug_name, c.id as drug_id
 
+### Query 2 bulk
 MATCH (c:Compound)-[:CuG|CdG]->(g:Gene)<-[:AdG|AuG]-(a:Anatomy)
 WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
    OR (c)-[:CdG]->(g)<-[:AuG]-(a)
