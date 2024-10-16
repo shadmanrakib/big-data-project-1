@@ -34,34 +34,25 @@ a single query.
 
 ## Queries
 ### Query 1
-MATCH (d:Disease)
-WHERE d.id = $diseaseId
+MATCH (d:Node {kind: "Disease", id: $diseaseId})
 // Match compounds that treat or palliate the disease
-OPTIONAL MATCH (d)<-[r:CtD|CpD]-(c:Compound)
+OPTIONAL MATCH (d)<-[r:CtD|CpD]-(c:Node {kind: "Compound"})
 // Match genes associated with the disease
-OPTIONAL MATCH (d)-[:DaG]->(g:Gene)
+OPTIONAL MATCH (d)-[:DaG]->(g:Node {kind: "Gene"})
 // Match anatomical locations related to the disease
-OPTIONAL MATCH (d)-[:DlA]->(a:Anatomy)
+OPTIONAL MATCH (d)-[:DlA]->(a:Node {kind: "Anatomy"})
 RETURN d.name AS disease_name,
-       collect(distinct c.name) AS compound_names,
-       collect(distinct g.name) AS gene_names,
-       collect(distinct a.name) AS anatomy_locations
+  collect(distinct c.name) AS compound_names,
+  collect(distinct g.name) AS gene_names,
+  collect(distinct a.name) AS anatomy_locations
 
 ### Query 2
-MATCH (c:Compound)-[:CuG|CdG]->(g:Gene)<-[:AdG|AuG]-(a:Anatomy)
+MATCH (c:Node {kind: "Compound"})-[:CuG|CdG]->(g:Node {kind: "Gene"})<-[:AdG|AuG]-(a:Node {kind: "Anatomy"})
 WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
    OR (c)-[:CdG]->(g)<-[:AuG]-(a)
-MATCH (d:Disease {id: $diseaseId})-[:DlA]->(a)
+MATCH (d {kind: "Disease", id: $diseaseId})-[:DlA]->(a)
 WHERE NOT EXISTS ((c)-[:CtD]->(d))
 RETURN DISTINCT c.name as drug_name, c.id as drug_id
-
-### Query 2 bulk
-MATCH (c:Compound)-[:CuG|CdG]->(g:Gene)<-[:AdG|AuG]-(a:Anatomy)
-WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
-   OR (c)-[:CdG]->(g)<-[:AuG]-(a)
-MATCH (d:Disease)-[:DlA]->(a)
-WHERE NOT EXISTS ((c)-[:CtD]->(d))
-RETURN DISTINCT d.name AS disease, collect(DISTINCT c.name) AS drugs
 
 
 
