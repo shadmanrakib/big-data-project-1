@@ -11,7 +11,7 @@ nodes_df = pd.read_csv(nodes_file, sep='\t')
 edges_df = pd.read_csv(edges_file, sep='\t')
 
 # Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://localhost:127.0.0.1:27017/')
 db = client['graphdb']
 
 # Drop collections if they already exist
