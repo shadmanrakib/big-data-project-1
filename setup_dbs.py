@@ -1,8 +1,10 @@
-import pandas
+import pandas as pd
 from neo4j import GraphDatabase, Session
+from pymongo import MongoClient
 
-def read_data(file_path: str) -> pandas.DataFrame:
-    data=pandas.read_csv(file_path, sep='\t')
+#prob don't need, since all data coming from MongoDB insted of tsv files
+def read_data(file_path: str) -> pd.DataFrame:
+    data=pd.read_csv(file_path, sep='\t')
     return data
 
 def delete_all_nodes(session: Session):
@@ -42,7 +44,7 @@ def create_index(session: Session):
     for query in queries:
         session.run(query)
 
-def batch_add_nodes(session: Session, nodes_df: pandas.DataFrame):
+def batch_add_nodes(session: Session, nodes_df: pd.DataFrame):
     query = f"""
             UNWIND $nodes AS node 
             CREATE (n:Node {{id: node.id, name: node.name, kind: node.kind}})
@@ -52,7 +54,7 @@ def batch_add_nodes(session: Session, nodes_df: pandas.DataFrame):
         nodes=nodes_df.to_dict(orient='records'),
     )
     
-def batch_add_edges(session: Session, edges_df: pandas.DataFrame):
+def batch_add_edges(session: Session, edges_df: pd.DataFrame):
     for metaedge in edges_df['metaedge'].unique():
         filtered_df = edges_df[edges_df["metaedge"] == metaedge]
         statement = f"""
@@ -62,7 +64,7 @@ def batch_add_edges(session: Session, edges_df: pandas.DataFrame):
         """
         session.run(statement, edges=filtered_df.to_dict(orient='records'))
         
-def setup_neo4j_db(session: Session, nodes_df: pandas.DataFrame, edges_df: pandas.DataFrame):
+def setup_neo4j_db(session: Session, nodes_df: pd.DataFrame, edges_df: pd.DataFrame):
     # delete all nodes, edges, index in db
     print("STARTING to delete edges, nodes, indices")
     delete_all_edges(session)
@@ -77,7 +79,37 @@ def setup_neo4j_db(session: Session, nodes_df: pandas.DataFrame, edges_df: panda
     batch_add_edges(session, edges_df)    
     print("FINISHED creating index, nodes, and edges")
     
+#prob don't need, since setup_dbs_mongo function replaces it, and it collects data from setup_dbs_mongo, then pass the data to setup_neo4j_db
 def setup_dbs(session: Session, nodes_filepath: str, edges_filepath: str):
     nodes_df = read_data(nodes_filepath)
     edges_df = read_data(edges_filepath)
+    setup_neo4j_db(session, nodes_df, edges_df)
+
+# MongoDB Setup Code to Fetch Data
+def get_mongo_data(mongo_uri: str, database_name: str):
+    client = MongoClient(mongo_uri)
+    db = client[database_name]
+    
+    # Fetch nodes from MongoDB (assuming your MongoDB collection is 'nodes')
+    nodes_point = db.nodes.find({}, {"_id": 0, "id": 1, "name": 1, "kind": 1})
+    nodes = list(nodes_point)
+    nodes_df = pd.DataFrame(nodes)  # Convert nodes to DataFrame
+    
+    # Fetch edges from MongoDB (assuming your MongoDB collection is 'edges')
+    edges_point = db.edges.find({}, {"_id": 0, "source": 1, "target": 1, "metaedge": 1})
+    edges = list(edges_point)
+    edges_df = pd.DataFrame(edges)  # Convert edges to DataFrame
+    
+    client.close()
+    
+    return nodes_df, edges_df
+
+# Main function to set up Neo4j DB from MongoDB data
+def setup_dbs_mongo(session: Session, mongo_uri: str, database_name: str):
+    # Fetch data from MongoDB
+    print("STARTING to fetch data from MongoDB")
+    nodes_df, edges_df = get_mongo_data(mongo_uri, database_name)
+    print("FINISHED fetching data from MongoDB")
+    
+    # Set up Neo4j database with MongoDB data
     setup_neo4j_db(session, nodes_df, edges_df)
