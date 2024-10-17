@@ -1278,4 +1278,261 @@ myTestDB> db.nodes.find({},{"name":1});
   { _id: ObjectId('670ef4694c8d47ed14846533'), name: 'sense organ' }
 ]
 Type "it" for more
+myTestDB> db.nodes.find({ id: "Disease::DOID:0050156", kind: "Disease" })
+[
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc0'),
+    id: 'Disease::DOID:0050156',
+    name: 'idiopathic pulmonary fibrosis',
+    kind: 'Disease'
+  }
+]
+myTestDB> db.edges.find({$or: [{ source: "Disease::DOID:0050156" },{ target:"Disease::DOID:0050156"}]})
+[
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc63bd'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::9639'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc63d0'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::79048'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc63d5'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::440026'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6408'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::55768'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc640e'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::8073'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6439'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::117143'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc648c'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::4839'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6496'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::7525'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc64c8'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::2823'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc64d5'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::153579'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6539'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::56922'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc656f'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::7570'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc659d'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::5583'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc65ed'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::100820829'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6600'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::660'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6618'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::10787'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6622'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::126669'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6637'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::64682'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc6642'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::9925'
+  },
+  {
+    _id: ObjectId('670efc1cb99aa6fdd4bc667c'),
+    source: 'Disease::DOID:0050156',
+    metaedge: 'DdG',
+    target: 'Gene::7122'
+  }
+]
+Type "it" for more
+myTestDB> db.nodes.find({ kind: "Disease" }).pretty()
+[
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc0'),
+    id: 'Disease::DOID:0050156',
+    name: 'idiopathic pulmonary fibrosis',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc1'),
+    id: 'Disease::DOID:0050425',
+    name: 'restless legs syndrome',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc3'),
+    id: 'Disease::DOID:0050741',
+    name: 'alcohol dependence',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc5'),
+    id: 'Disease::DOID:0050742',
+    name: 'nicotine dependence',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc6'),
+    id: 'Disease::DOID:0060119',
+    name: 'pharynx cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc7'),
+    id: 'Disease::DOID:1024',
+    name: 'leprosy',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc8'),
+    id: 'Disease::DOID:10763',
+    name: 'hypertension',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cc9'),
+    id: 'Disease::DOID:0060073',
+    name: 'lymphatic system cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cca'),
+    id: 'Disease::DOID:10021',
+    name: 'duodenum cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846ccb'),
+    id: 'Disease::DOID:10534',
+    name: 'stomach cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846ccc'),
+    id: 'Disease::DOID:10871',
+    name: 'age related macular degeneration',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846ccd'),
+    id: 'Disease::DOID:1094',
+    name: 'attention deficit hyperactivity disorder',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cce'),
+    id: 'Disease::DOID:10153',
+    name: 'ileum cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846ccf'),
+    id: 'Disease::DOID:10811',
+    name: 'nasal cavity cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd0'),
+    id: 'Disease::DOID:10652',
+    name: "Alzheimer's disease",
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd1'),
+    id: 'Disease::DOID:10976',
+    name: 'membranous glomerulonephritis',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd2'),
+    id: 'Disease::DOID:11054',
+    name: 'urinary bladder cancer',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd3'),
+    id: 'Disease::DOID:11119',
+    name: 'Gilles de la Tourette syndrome',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd4'),
+    id: 'Disease::DOID:1115',
+    name: 'sarcoma',
+    kind: 'Disease'
+  },
+  {
+    _id: ObjectId('670ef4694c8d47ed14846cd5'),
+    id: 'Disease::DOID:10941',
+    name: 'intracranial aneurysm',
+    kind: 'Disease'
+  }
+]
+Type "it" for more
 myTestDB>
