@@ -1,7 +1,7 @@
 import click
 from neo4j import GraphDatabase
 
-from queries import get_disease_info, get_new_treatments
+from queries import get_disease_info, get_new_treatments, get_disease_relations
 from setup_dbs import setup_dbs
 
 @click.command()
@@ -43,8 +43,16 @@ def cli(uri, user, password, database):
                         click.echo(f"\nCount: {count}")
                     else:
                         click.echo("No results found.")
-                elif choice == 4:
-                    break
+                elif choice == 4:  # Add a new choice for disease relations
+                    disease_id = click.prompt("Enter disease ID (ex: Disease::DOID:0050156)", type=str)
+                    mongo_uri = click.prompt("Enter MongoDB URI", help='mongodb://localhost:27017')
+                    database_name = click.prompt("Enter MongoDB Database name", help='myTestDB')
+                    relations = get_disease_relations(mongo_uri, database_name, disease_id)
+                    if relations:
+                        print("Relations:")
+                        for relation in relations:
+                            print(f"  Relation Type: {relation['relation_type']}")
+                            print(f"    - Related Node ID: {relation['related_node']['id']}, Kind: {relation['related_node']['kind']}")
                 else:
                     click.echo("Invalid choice. Please try again.")
         
