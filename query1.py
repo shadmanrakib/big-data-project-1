@@ -9,7 +9,7 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
     pipeline = [
         {"$match": {"id": disease_id, "kind": "Disease"}},
         {"$lookup": { 
-            "from": "Edges",
+            "from": "edges",
             "let": {"node_id": "$id"},
             "pipeline": [
                 {"$match": 
@@ -22,7 +22,7 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
                 },
 
                 {"$lookup": {
-                    "from": "Nodes",
+                    "from": "nodes",
                     "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
                     "pipeline": [
                         {"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}}
