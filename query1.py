@@ -3,6 +3,7 @@ from bson import ObjectId
 
 def get_disease_relations(mongo_uri, database_name, disease_id):
     client = MongoClient(mongo_uri)
+    #with MongoClient(mongo_uri) as client:
     db = client[database_name]
     #disease_id = ObjectId('670ef4694c8d47ed14846cc0')
 
@@ -25,7 +26,8 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
                     "from": "nodes",
                     "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
                     "pipeline": [
-                        {"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}}
+                        {"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}},
+                        {"$project": {"id": 1, "kind": 1, "name": 1}}
                     ],
                     "as": "related_node"
                 }},
@@ -35,7 +37,8 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
                     "relation_type": "$metaedge",
                     "related_node": { 
                         "id": "$related_node.id",
-                        "kind": "$related_node.kind"
+                        "kind": "$related_node.kind",
+                        "name": "$related_node.name"
                     }
                 }}
             ],
@@ -46,7 +49,8 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
         {"$group": {
             "_id": {
                 "id": "$id",
-                "kind": "$kind"
+                "kind": "$kind",
+                "name": "$name"
             },
             "related_nodes": {
                 "$push": {
@@ -59,12 +63,13 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
         {"$project": {
             "_id": 0,
             "id": "$_id.id",
+            "name": "$_id.name",
             "kind": "$_id.kind",
             "related_nodes": 1
         }}
     ]
 
-    print(list(db.nodes.find({ "id": disease_id, "kind": "Disease" })))
+    #print(list(db.nodes.find({ "id": disease_id, "kind": "Disease" })))
 
     result = list(db.nodes.aggregate(pipeline))
 
