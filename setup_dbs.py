@@ -1,8 +1,6 @@
 import pandas as pd
-from neo4j import GraphDatabase, Session
-from pymongo import MongoClient
+from neo4j import Session
 
-#prob don't need, since all data coming from MongoDB insted of tsv files
 def read_data(file_path: str) -> pd.DataFrame:
     data=pd.read_csv(file_path, sep='\t')
     return data
