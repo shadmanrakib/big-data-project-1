@@ -1,7 +1,7 @@
 # big-data-project-1
 
 ## Installations
-Setup Neo4J database (download and configure), create python virtual environment, and install dependencies.
+Setup Neo4J and mongodb database (download and configure), create python virtual environment, and install dependencies.
 
 ```bash
 install python dependencies
