@@ -46,7 +46,99 @@ a new disease (i.e. the missing edges between compound and disease excluding exi
 a single query.
 
 ## Queries
-### Query 1
+
+### Query 1 (MongoDB)
+```python
+pipeline = [
+        # get disease with matching id
+        {"$match": {"id": disease_id, "kind": "Disease"}},
+        # find relevant edges
+        {"$lookup": {
+            "from": "edges",
+            "let": {"node_id": "$id"},
+            "pipeline": [
+                {"$match": {
+                    "$expr": {
+                        "$or": [
+                            {"$eq": ["$source", "$$node_id"]},
+                            {"$eq": ["$target", "$$node_id"]}
+                        ]
+                    }
+                }},
+	    # find nodes from relevant edges above
+                {"$lookup": {
+                    "from": "nodes",
+                    "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
+                    "pipeline": [
+                        {"$match": {
+                            "$expr": {"$eq": ["$id", "$$related_id"]}
+                        }}
+                    ],
+                    "as": "related_node"
+                }},
+	   # turn array of results into documents so we can project again
+                {"$unwind": "$related_node"},
+                 # add necessary info about the node and the relation
+	     {"$project": {
+                    "relation_type": "$metaedge",
+                    "related_node": {
+                        "id": "$related_node.id",
+                        "kind": "$related_node.kind",
+                        "name": "$related_node.name"
+                    }
+                }}
+            ],
+            "as": "relations"
+        }},
+        # turn array of result into documents so that we can group
+        {"$unwind": "$relations"},
+        # group the relations based on relation type
+        {"$group": {
+            "_id": {
+                "id": "$id",
+                "kind": "$kind",
+                "name": "$name"
+            },
+            "compounds": {
+                "$addToSet": {
+                    "$cond": [
+                        {"$in": ["$relations.relation_type", ["CtD", "CpD"]]},
+                        "$relations.related_node.name",
+                        "$$REMOVE"
+                    ]
+                }
+            },
+            "genes": {
+                "$addToSet": {
+                    "$cond": [
+                        {"$eq": ["$relations.relation_type", "DaG"]},
+                        "$relations.related_node.name",
+                        "$$REMOVE"
+                    ]
+                }
+            },
+            "anatomy": {
+                "$addToSet": {
+                    "$cond": [
+                        {"$eq": ["$relations.relation_type", "DlA"]},
+                        "$relations.related_node.name",
+                        "$$REMOVE"
+                    ]
+                }
+            }
+        }},
+        {"$project": {
+            "_id": 0,
+            "disease_name": "$_id.name",
+            "compound_names": "$compounds",
+            "gene_names": "$genes",
+            "anatomy_locations": "$anatomy"
+        }}
+    ]
+```
+
+### Query 1 (Neo4j)
+```cypher
 MATCH (d:Node {kind: "Disease", id: $diseaseId})
 // Match compounds that treat or palliate the disease
 OPTIONAL MATCH (d)<-[r:CtD|CpD]-(c:Node {kind: "Compound"})
@@ -58,8 +150,10 @@ RETURN d.name AS disease_name,
   collect(distinct c.name) AS compound_names,
   collect(distinct g.name) AS gene_names,
   collect(distinct a.name) AS anatomy_locations
+```
 
 ### Query 2
+```cypher
 // get all compounds that can have potential to do opposite of some anatomy on a gene
 MATCH (c:Node {kind: "Compound"})-[:CuG|CdG]->(g:Node {kind: "Gene"})<-[:AdG|AuG]-(a:Node {kind: "Anatomy"})
 // narrow to down to just the opposite
@@ -69,6 +163,5 @@ MATCH (d {kind: "Disease", id: $diseaseId})-[:DlA]->(a)
 // make sure the compound is a new one
 WHERE NOT EXISTS ((c)-[:CtD]->(d))
 RETURN DISTINCT c.name as drug_name, c.id as drug_id
-
-
+```
 
