@@ -42,58 +42,80 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
         db = client[database_name]
 
         pipeline = [
-            {"$match": {"id": disease_id, "kind": "Disease"}},
-            {"$lookup": { 
-                "from": "edges",
-                "let": {"node_id": "$id"},
-                "pipeline": [
-                    {"$match": 
-                        {"$expr": 
-                            {"$or": [
-                                {"$eq": ["$source", "$$node_id"]},
-                                {"$eq": ["$target", "$$node_id"]}
-                            ]}
-                        }
-                    },
-                    {"$lookup": {
-                        "from": "nodes",
-                        "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
-                        "pipeline": [
-                            {"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}}
-                        ],
-                        "as": "related_node"
-                    }},
-                    {"$unwind": "$related_node"},
-                    {"$project": {
-                        "relation_type": "$metaedge",
-                        "related_node": { 
-                            "id": "$related_node.id",
-                            "kind": "$related_node.kind"
-                        }
-                    }}
-                ],
-                "as": "relations"
-            }},
-            {"$unwind": "$relations"},
-            {"$group": {
-                "_id": {
-                    "id": "$id",
-                    "kind": "$kind"
-                },
-                "related_nodes": {
-                    "$push": {
-                        "relation_type": "$relations.relation_type",
-                        "related_node": "$relations.related_node"
+        {"$match": {"id": disease_id, "kind": "Disease"}},
+        {"$lookup": { 
+            "from": "edges",
+            "let": {"node_id": "$id"},
+            "pipeline": [
+                {"$match": 
+                    {"$expr": 
+                        {"$or": [
+                            {"$eq": ["$source", "$$node_id"]},
+                            {"$eq": ["$target", "$$node_id"]}
+                        ]}
                     }
+                },
+
+                #{"$match": {"metaedge": "DaG"}}, #added
+
+                {"$lookup": {
+                    "from": "nodes",
+                    "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
+                    "pipeline": [
+                        {"$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$id", "$$related_id"]},
+                                    {"$or": [
+                                        {"$eq": ["$kind", "Gene"]},     # Include genes
+                                        {"$eq": ["$kind", "Compound"]}, # Include compounds
+                                        {"$eq": ["$kind", "Anatomy"]}   # Include anatomies
+                                    ]}
+                                ]
+                            }
+                        }}
+                    ],
+                    "as": "related_node"
+
+        }},
+
+        {"$unwind": "$related_node"},
+        {"$project": {
+            "relation_type": "$metaedge",
+            "related_node": { 
+                "id": "$related_node.id",
+                "kind": "$related_node.kind",
+                "name": "$related_node.name"
+            }
+        }
+        },
+    ],
+    "as": "relations"
+}},
+
+        {"$unwind": "$relations"},
+        {"$group": {
+            "_id": {
+                "id": "$id",
+                "kind": "$kind",
+                "name": "$name"
+            },
+            "related_nodes": {
+                "$push": {
+                    "relation_type": "$relations.relation_type",
+                    "related_node": "$relations.related_node"
                 }
-            }},
-            {"$project": {
-                "_id": 0,
-                "id": "$_id.id",
-                "kind": "$_id.kind",
-                "related_nodes": 1
-            }}
-        ]
+            }
+        }},
+
+        {"$project": {
+            "_id": 0,
+            "id": "$_id.id",
+            "name": "$_id.name",
+            "kind": "$_id.kind",
+            "related_nodes": 1
+        }}
+    ]
 
         try:
             result = list(db.nodes.aggregate(pipeline))
