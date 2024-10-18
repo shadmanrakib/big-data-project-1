@@ -22,28 +22,52 @@ def get_disease_relations(mongo_uri, database_name, disease_id):
                     }
                 },
 
-                {"$lookup": {
-                    "from": "nodes",
-                    "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
-                    "pipeline": [
-                        {"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}},
-                        {"$project": {"id": 1, "kind": 1, "name": 1}}
-                    ],
-                    "as": "related_node"
-                }},
+                #{"$match": {"metaedge": "DaG"}}, #added
+                #{"$lookup": {
+                    #"from": "nodes",
+                    #"let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
+                    #"pipeline": [
+                        #{"$match": {"$expr": {"$eq": ["$id", "$$related_id"]}}}
+                        #{"$project": {"id": 1, "kind": 1, "name": 1}}
+                        #{"$match": {"kind": "Gene"}} #added
+                    #],
+                    #"as": "related_node"
 
-                {"$unwind": "$related_node"},
-                {"$project": {
-                    "relation_type": "$metaedge",
-                    "related_node": { 
-                        "id": "$related_node.id",
-                        "kind": "$related_node.kind",
-                        "name": "$related_node.name"
+        {"$lookup": {
+            "from": "nodes",
+            "let": {"related_id": {"$cond": [{"$eq": ["$source", "$$node_id"]}, "$target", "$source"]}},
+            "pipeline": [
+                {"$match": {
+                    "$expr": {
+                        "$and": [
+                            {"$eq": ["$id", "$$related_id"]},
+                            {"$or": [
+                                {"$eq": ["$kind", "Gene"]},     # Include genes
+                                {"$eq": ["$kind", "Compound"]}, # Include compounds
+                                {"$eq": ["$kind", "Anatomy"]}   # Include anatomies
+                            ]}
+                        ]
                     }
                 }}
             ],
-            "as": "relations"
+            "as": "related_node"
+
         }},
+
+        {"$unwind": "$related_node"},
+        {"$project": {
+            "relation_type": "$metaedge",
+            "related_node": { 
+                "id": "$related_node.id",
+                "kind": "$related_node.kind",
+                "name": "$related_node.name"
+            #"related_gene": "$related_gene.id" #added
+            }
+        }
+        },
+    ],
+    "as": "relations"
+}},
 
         {"$unwind": "$relations"},
         {"$group": {
@@ -83,12 +107,48 @@ if __name__ == "__main__":
     disease_id = "Disease::DOID:0050156"
 
     result = get_disease_relations(mongo_uri, database_name, disease_id)
+    #if result:
+        #print(f"Disease ID: {result['id']}")
+        
+        #print(f"Disease Kind: {result['kind']}")
+        #print("Related Nodes:")
+        #for relation in result['related_nodes']:
+            #print(f"  Relation Type: {relation['relation_type']}")
+            #print(f"    - ID: {relation['related_node']['id']}, Kind: {relation['related_node']['kind']}")
+    #else:
+        #print("No results found.")
+
     if result:
-        print(f"Disease ID: {result['id']}")
-        print(f"Disease Kind: {result['kind']}")
-        print("Related Nodes:")
+        print(f"Disease Name: {result['name']}")
+
+        treats_drugs = set()
+        palliates_drugs = set()
+        anatomy_names = set()
+        gene_names = set()
+
         for relation in result['related_nodes']:
-            print(f"  Relation Type: {relation['relation_type']}")
-            print(f"    - ID: {relation['related_node']['id']}, Kind: {relation['related_node']['kind']}")
+            related_kind = relation['related_node']['kind']
+            related_name = relation['related_node']['name']
+            relation_type = relation['relation_type']
+
+            if related_kind == 'Compound':
+                if relation_type == 'CtD':  # Treats
+                    treats_drugs.add(related_name)
+                elif relation_type == 'CpD':  # Palliates
+                    palliates_drugs.add(related_name)
+            elif related_kind == 'Anatomy':
+                anatomy_names.add(related_name)
+            elif related_kind == 'Gene':
+                gene_names.add(related_name)
+
+        # Output the results
+        print(f"\nDrugs:")
+        print(f"Treats: {', '.join(treats_drugs) if treats_drugs else 'None'}")
+        print(f"Palliates: {', '.join(palliates_drugs)}")
+
+        print(f"\nAnatomy: {', '.join(anatomy_names)}")
+        
+        print(f"\nAssociated Genes: {', '.join(gene_names)}")
+        
     else:
         print("No results found.")
