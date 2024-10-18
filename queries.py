@@ -1,5 +1,21 @@
 from neo4j import Session
 
+def get_new_treatments(session: Session, disease_id: str):
+    query = """
+    // get all compounds that can have potential to do opposite of some anatomy on a gene
+    MATCH (c:Node {kind: "Compound"})-[:CuG|CdG]->(g:Node {kind: "Gene"})<-[:AdG|AuG]-(a:Node {kind: "Anatomy"})
+    // narrow to down to just the opposite
+    WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
+        OR (c)-[:CdG]->(g)<-[:AuG]-(a)
+    MATCH (d {kind: "Disease", id: $diseaseId})-[:DlA]->(a)
+    // make sure the compound is a new one
+    WHERE NOT EXISTS ((c)-[:CtD]->(d))
+    RETURN DISTINCT c.name as drug_name, c.id as drug_id
+    """
+    result = session.run(query, diseaseId=disease_id)
+    records = [record.data() for record in result]
+    return records
+
 def get_disease_info_neo4j(session: Session, disease_id: str):
     query = """
     MATCH (d:Node {kind: "Disease", id: $diseaseId})
@@ -17,24 +33,6 @@ def get_disease_info_neo4j(session: Session, disease_id: str):
     result = session.run(query, diseaseId=disease_id)
     records = [record.data() for record in result]
     return records, len(records)
-
-def get_new_treatments(session: Session, disease_id: str):
-    query = """
-    // get all compounds that can have potential to do opposite of some anatomy on a gene
-    MATCH (c:Node {kind: "Compound"})-[:CuG|CdG]->(g:Node {kind: "Gene"})<-[:AdG|AuG]-(a:Node {kind: "Anatomy"})
-    // narrow to down to just the opposite
-    WHERE (c)-[:CuG]->(g)<-[:AdG]-(a)
-        OR (c)-[:CdG]->(g)<-[:AuG]-(a)
-    MATCH (d {kind: "Disease", id: $diseaseId})-[:DlA]->(a)
-    // make sure the compound is a new one
-    WHERE NOT EXISTS ((c)-[:CtD]->(d))
-    RETURN DISTINCT c.name as drug_name, c.id as drug_id
-    """
-    result = session.run(query, diseaseId=disease_id)
-    records = [record.data() for record in result]
-    return records
-
-from pymongo import MongoClient
 
 def get_disease_info_mongodb(db, disease_id: str):
     pipeline = [
