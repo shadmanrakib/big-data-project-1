@@ -1,6 +1,6 @@
 # big-data-project-1
 
-## installations
+## Installations
 Setup Neo4J database (download and configure), create python virtual environment, and install dependencies.
 
 ```bash
@@ -10,7 +10,17 @@ source env/bin/activate
 pip3 install -r requirements.txt
 ```
 
-## requirements
+## How to run cli
+```bash
+python3 main.py
+```
+You can provide config input prompts ahead of time too.
+```bash
+python3 main.py --neo4j_uri=bolt://localhost:7687 --neo4j_user=neo4j --neo4j_password=password --neo4j_database=neo4j --mongodb_uri=mongodb://localhost:27017 --mongodb_database=graphdb
+```
+
+
+## Requirements
 - A python CLI for database creation and queries
 - Use at least two types of NoSQL stores (document, graph, key value, column family)
 - Document/specifications (in print)
@@ -20,7 +30,7 @@ pip3 install -r requirements.txt
 - All source code set by email
 - Two person team
 
-## questions
+## Questions
 1. Given a disease id, what is its name,
 what are drug names that can treat or
 palliate this disease, what are gene
