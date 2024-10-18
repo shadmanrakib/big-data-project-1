@@ -79,37 +79,29 @@ def setup_neo4j_db(session: Session, nodes_df: pd.DataFrame, edges_df: pd.DataFr
     batch_add_edges(session, edges_df)    
     print("FINISHED creating index, nodes, and edges")
     
-#prob don't need, since setup_dbs_mongo function replaces it, and it collects data from setup_dbs_mongo, then pass the data to setup_neo4j_db
-def setup_dbs(session: Session, nodes_filepath: str, edges_filepath: str):
-    nodes_df = read_data(nodes_filepath)
-    edges_df = read_data(edges_filepath)
-    setup_neo4j_db(session, nodes_df, edges_df)
 
-# MongoDB Setup Code to Fetch Data
-def get_mongo_data(mongo_uri: str, database_name: str):
-    client = MongoClient(mongo_uri)
-    db = client[database_name]
-    
-    # Fetch nodes from MongoDB (assuming your MongoDB collection is 'nodes')
-    nodes_point = db.nodes.find({}, {"_id": 0, "id": 1, "name": 1, "kind": 1})
-    nodes = list(nodes_point)
-    nodes_df = pd.DataFrame(nodes)  # Convert nodes to DataFrame
-    
-    # Fetch edges from MongoDB (assuming your MongoDB collection is 'edges')
-    edges_point = db.edges.find({}, {"_id": 0, "source": 1, "target": 1, "metaedge": 1})
-    edges = list(edges_point)
-    edges_df = pd.DataFrame(edges)  # Convert edges to DataFrame
-    
-    client.close()
-    
-    return nodes_df, edges_df
-
-# Main function to set up Neo4j DB from MongoDB data
-def setup_dbs_mongo(session: Session, mongo_uri: str, database_name: str):
-    # Fetch data from MongoDB
+def setup_mongo_db(db, nodes_df: pd.DataFrame, edges_df: pd.DataFrame):
     print("STARTING to fetch data from MongoDB")
-    nodes_df, edges_df = get_mongo_data(mongo_uri, database_name)
+    
+    # Drop collections if they already exist
+    db.nodes.drop()
+    db.edges.drop()
+
+    # Insert nodes into the 'nodes' collection
+    nodes_collection = db['nodes']
+    nodes_data = nodes_df.to_dict(orient='records')
+    nodes_collection.insert_many(nodes_data)
+
+    # Insert edges into the 'edges' collection
+    edges_collection = db['edges']
+    edges_data = edges_df.to_dict(orient='records')
+    edges_collection.insert_many(edges_data)
+    
     print("FINISHED fetching data from MongoDB")
     
-    # Set up Neo4j database with MongoDB data
-    setup_neo4j_db(session, nodes_df, edges_df)
+def setup_dbs(mongodb, neo4j_session: Session, nodes_filepath: str, edges_filepath: str):
+    nodes_df = read_data(nodes_filepath)
+    edges_df = read_data(edges_filepath)
+    
+    setup_mongo_db(mongodb, nodes_df, edges_df)
+    setup_neo4j_db(neo4j_session, nodes_df, edges_df)

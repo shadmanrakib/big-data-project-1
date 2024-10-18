@@ -3,8 +3,8 @@ from pymongo import MongoClient
 import pymongo
 
 # Paths to the files
-nodes_file = 'C:/Users/nurul/Downloads/hetionet/nodes.tsv'
-edges_file = 'C:/Users/nurul/Downloads/hetionet/edges.tsv'
+nodes_file = 'hetionet/nodes.tsv'
+edges_file = 'hetionet/edges.tsv'
 
 # Load TSV files into pandas DataFrames
 nodes_df = pd.read_csv(nodes_file, sep='\t')
